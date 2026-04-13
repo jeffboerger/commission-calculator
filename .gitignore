@@ -1,0 +1,27 @@
+# Enviroment & Secrets
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyc
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# Output Files
+*.csv
+*.pdf
+*.xlsx
+*.xls
+commission_*.csv
+
+# Mac
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
