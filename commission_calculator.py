@@ -43,16 +43,15 @@ load_dotenv()
 BASE_URL           = os.getenv("BASE_URL",   "")
 LOGIN_URL          = os.getenv("LOGIN_URL",  "")
 LIST_URL           = os.getenv("LIST_URL",   "")
-USERNAME           = os.getenv("SITE_USERNAME", "")
-PASSWORD           = os.getenv("SITE_PASSWORD", "")
-MY_USERNAME        = os.getenv("MY_USERNAME", "")
+USERNAME    = os.getenv("SITE_USERNAME", "")
+PASSWORD    = os.getenv("SITE_PASSWORD", "")
+MY_USERNAME        = os.getenv("MY_USERNAME", "jeff.boerger")
 SALES_REPS         = [r.strip() for r in os.getenv("SALES_REPS", MY_USERNAME).split(",")]
 EXEMPT_ACTIVATORS  = [r.strip().lower() for r in os.getenv("EXEMPT_ACTIVATORS", "Online Customer,autopay,Admin").split(",")]
 
 COMMISSION_RATE = 0.10
 
 # ── Output folder ─────────────────────────────────────────────────────────────
-
 OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "output")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
@@ -765,7 +764,7 @@ def run_single(session: requests.Session):
     if save in ("1", "2", "3", "4", "excel", "pdf", "csv", "all"):
         period = get_period_label(results, fallback="commission")
         ts     = datetime.now().strftime("%Y%m%d_%H%M")
-        base   = f"jeff_commission_{period.replace(' ', '_')}_{ts}"
+        base   = os.path.join(OUTPUT_DIR, f"jeff_commission_{period.replace(' ', '_')}_{ts}")
         if save in ("1", "excel", "4", "all"):
             save_to_xlsx(results, f"{base}.xlsx", label="Manual Entry")
         if save in ("2", "pdf", "4", "all"):
@@ -786,7 +785,7 @@ def run_batch(session: requests.Session, input_file: str):
             print_result(r)
             results.append(r)
 
-    output_file = input_file.replace(".txt", "_results.csv").replace(".csv", "_results.csv")
+    output_file = os.path.join(OUTPUT_DIR, os.path.basename(input_file).replace(".txt", "_results.csv").replace(".csv", "_results.csv"))
     save_to_csv(results, output_file, label=f"Batch: {input_file}")
     print_summary(results, label=f"Batch: {input_file}")
 
@@ -820,18 +819,41 @@ def run_month(session: requests.Session, month_str: str):
             print_result(r)
             results.append(r)
 
-    output_file = f"commission_{dt.strftime('%Y_%m')}.csv"
+    output_file = os.path.join(OUTPUT_DIR, f"commission_{dt.strftime('%Y_%m')}.csv")
     save_to_csv(results, output_file, label=month_label)
     print_summary(results, label=f"Commission for {month_label}")
 
 
 # ── Entry point ───────────────────────────────────────────────────────────────
 
+def validate_env():
+    """Check all required .env variables are set before doing anything."""
+    required = {
+        "BASE_URL":       BASE_URL,
+        "LOGIN_URL":      LOGIN_URL,
+        "LIST_URL":       LIST_URL,
+        "SITE_USERNAME":  USERNAME,
+        "SITE_PASSWORD":  PASSWORD,
+        "MY_USERNAME":    MY_USERNAME,
+        "SALES_REPS":     ", ".join(SALES_REPS),
+    }
+    missing = [key for key, val in required.items() if not val or val.strip() == ""]
+    if missing:
+        print("\n  ERROR: The following required variables are missing from your .env file:")
+        for key in missing:
+            print(f"    - {key}")
+        print("\n  Copy .env.example to .env and fill in all values.")
+        print("  See README.md for setup instructions.\n")
+        exit(1)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Commission Calculator — ERS Platform")
     parser.add_argument("--batch", metavar="FILE",       help="Process a file of order IDs")
     parser.add_argument("--month", metavar="MONTH_YEAR", help="Pull all orders by event month, e.g. 'March 2025'")
     args = parser.parse_args()
+
+    validate_env()
 
     print("Logging in...")
     session = create_session()
