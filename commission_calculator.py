@@ -40,16 +40,21 @@ load_dotenv()
 
 # ── Config ────────────────────────────────────────────────────────────────────
 
-BASE_URL           = os.getenv("BASE_URL",   "https://yourplatform.ourers.com")
-LOGIN_URL          = os.getenv("LOGIN_URL",  "https://yourplatform.ourers.com/cp/login/")
-LIST_URL           = os.getenv("LIST_URL",   "https://yourplatform.ourers.com/cp/events/")
+BASE_URL           = os.getenv("BASE_URL",   "")
+LOGIN_URL          = os.getenv("LOGIN_URL",  "")
+LIST_URL           = os.getenv("LIST_URL",   "")
 USERNAME           = os.getenv("SITE_USERNAME", "")
 PASSWORD           = os.getenv("SITE_PASSWORD", "")
-MY_USERNAME        = os.getenv("MY_USERNAME", "your.username")
+MY_USERNAME        = os.getenv("MY_USERNAME", "")
 SALES_REPS         = [r.strip() for r in os.getenv("SALES_REPS", MY_USERNAME).split(",")]
 EXEMPT_ACTIVATORS  = [r.strip().lower() for r in os.getenv("EXEMPT_ACTIVATORS", "Online Customer,autopay,Admin").split(",")]
 
 COMMISSION_RATE = 0.10
+
+# ── Output folder ─────────────────────────────────────────────────────────────
+
+OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "output")
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 
 # ── URL helpers ───────────────────────────────────────────────────────────────
