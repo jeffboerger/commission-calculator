@@ -104,6 +104,10 @@ cp .env.example .env
 nano .env  # fill in your credentials
 ```
 
+### Output Folder
+
+All reports are saved to an `output/` folder inside your project directory. This folder is created automatically on first run and is excluded from Git — your commission reports stay local.
+
 ### `.env` Configuration
 
 ```env
@@ -269,7 +273,7 @@ commission-calculator/
 
 ## Known Limitations
 
-- **Month mode** requires Playwright (JS calendar) — not yet implemented
+- **Month mode** requires Playwright (JS calendar) — not yet implemented (see Future Development)
 - **Year-end edge case**: event dates on new orders don't include the year (e.g. "Mar 14"), so the script assumes the current year. Orders booked in December for the following January may need manual verification
 - **Surface fee row ID** (`ers_line_item_option_surface_fee`) has not been confirmed from a real order — update if surface fees are not being captured
 - The script processes orders sequentially — large batches may take a few minutes

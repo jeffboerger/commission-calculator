@@ -71,6 +71,33 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-04-13
+
+### Fixed
+- Unpaid orders now correctly loop back to the order ID prompt instead of jumping to the save screen
+
+### Changed
+- Save prompt expanded to include all useful format combos:
+  - (1) Excel
+  - (2) PDF
+  - (3) CSV
+  - (4) Excel + PDF
+  - (5) PDF + CSV
+  - (6) All
+  - (n) Don't save
+- Removed Excel + CSV combo option (not needed)
+- Any error on an order now loops back cleanly instead of crashing
+- Invalid save choice now exits cleanly with a message instead of silently doing nothing
+
+## [1.0.1] - 2026-04-13
+
+### Added
+- `.env` validation on startup — checks all required variables are set before attempting login
+- Clear error message listing missing variables with instructions to check `.env.example` and README
+- Output folder (`output/`) created automatically on first run — all reports saved there to keep project root clean
+- `output/` added to `.gitignore` so reports are never committed to Git
+- Removed hardcoded platform URLs from config defaults — all URLs must now be set in `.env`
+
 ### Planned for 1.1.0
 - Month mode via Playwright for automatic order discovery
 - Startup validation of required `.env` variables

@@ -352,7 +352,7 @@ def process_order(session: requests.Session, order_id: str,
         pay_data["surface_fee"], pay_data["misc_fee"]
     )
 
-    your_commission = round(calc["commission"] * share_pct, 2)
+    your_commission = round(calc["commission"] * share_pct, 2) if not pay_data.get("not_paid") else 0.0
 
     return {
         "order_id":         order_id,
@@ -745,32 +745,60 @@ def run_single(session: requests.Session):
     print("Enter order IDs one at a time. Type 'q' or 'quit' when done.\n")
 
     while True:
-        order_id = input("Order ID (or q to finish): ").strip()
+        order_id = input("\nOrder ID (or q to finish): ").strip()
         if order_id.lower() in ("q", "quit", ""):
             break
 
-        result = process_order(session, order_id)
-        if result:
-            print_result(result)
-            results.append(result)
+        try:
+            result = process_order(session, order_id)
+        except Exception as e:
+            print(f"  \u2717  Error on {order_id}: {e}")
+            continue
+
+        if result is None:
+            continue  # skipped - not yours, wrong month, etc. loop back
+
+        print_result(result)
+        results.append(result)
+        # always loop back for next order ID
 
     if not results:
-        print("No results to save.")
+        print("\nNo results to save.")
         return
 
     print_summary(results, label="Manual Entry")
-    print("\nSave as: (1) Excel  (2) PDF  (3) CSV  (4) All  (n) Don't save")
+    print("\nSave as:")
+    print("  (1) Excel")
+    print("  (2) PDF")
+    print("  (3) CSV")
+    print("  (4) Excel + PDF")
+    print("  (5) PDF + CSV")
+    print("  (6) All")
+    print("  (n) Don't save")
     save = input("Choice: ").strip().lower()
-    if save in ("1", "2", "3", "4", "excel", "pdf", "csv", "all"):
-        period = get_period_label(results, fallback="commission")
-        ts     = datetime.now().strftime("%Y%m%d_%H%M")
-        base   = os.path.join(OUTPUT_DIR, f"jeff_commission_{period.replace(' ', '_')}_{ts}")
-        if save in ("1", "excel", "4", "all"):
-            save_to_xlsx(results, f"{base}.xlsx", label="Manual Entry")
-        if save in ("2", "pdf", "4", "all"):
-            save_to_pdf(results, f"{base}.pdf", label="Manual Entry")
-        if save in ("3", "csv", "4", "all"):
-            save_to_csv(results, f"{base}.csv", label="Manual Entry")
+
+    if save in ("n", "no", ""):
+        print("  Not saved.")
+        return
+
+    period = get_period_label(results, fallback="commission")
+    ts     = datetime.now().strftime("%Y%m%d_%H%M")
+    base   = os.path.join(OUTPUT_DIR, f"jeff_commission_{period.replace(' ', '_')}_{ts}")
+
+    do_excel = save in ("1", "excel", "4", "excel+pdf", "6", "all")
+    do_pdf   = save in ("2", "pdf",   "4", "excel+pdf", "5", "pdf+csv", "6", "all")
+    do_csv   = save in ("3", "csv",   "5", "pdf+csv",   "6", "all")
+
+    if not any([do_excel, do_pdf, do_csv]):
+        print("  Invalid choice — not saved.")
+        return
+
+    if do_excel:
+        save_to_xlsx(results, f"{base}.xlsx", label="Manual Entry")
+    if do_pdf:
+        save_to_pdf(results, f"{base}.pdf", label="Manual Entry")
+    if do_csv:
+        save_to_csv(results, f"{base}.csv", label="Manual Entry")
 
 
 def run_batch(session: requests.Session, input_file: str):
