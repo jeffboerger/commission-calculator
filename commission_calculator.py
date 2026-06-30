@@ -741,13 +741,18 @@ def print_summary(results: list[dict], label: str = ""):
 # ── Modes ─────────────────────────────────────────────────────────────────────
 
 def run_single(session: requests.Session):
-    results = []
+    results   = []
+    seen_ids  = set()
     print("Enter order IDs one at a time. Type 'q' or 'quit' when done.\n")
 
     while True:
         order_id = input("\nOrder ID (or q to finish): ").strip()
         if order_id.lower() in ("q", "quit", ""):
             break
+
+        if order_id in seen_ids:
+            print(f"  ⚠  {order_id} already entered — skipping duplicate")
+            continue
 
         try:
             result = process_order(session, order_id)
@@ -758,6 +763,7 @@ def run_single(session: requests.Session):
         if result is None:
             continue  # skipped - not yours, wrong month, etc. loop back
 
+        seen_ids.add(order_id)
         print_result(result)
         results.append(result)
         # always loop back for next order ID

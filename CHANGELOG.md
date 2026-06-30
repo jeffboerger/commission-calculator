@@ -71,6 +71,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-04-13
+
+### Fixed
+- Unpaid orders now correctly show `$0.00` for Your Commission in terminal output and report
+- All other fields (subtotal, comm rev, full commission) still display so you can see potential earnings once paid
+
+### Added
+- Duplicate order ID detection — entering the same order ID twice skips the second entry with a warning
+
 ## [1.0.2] - 2026-04-13
 
 ### Fixed
